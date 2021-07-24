@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Tag } from 'src/tags/entities/tag.entity';
 import { TagsService } from 'src/tags/tags.service';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -17,16 +18,19 @@ export class PostsService {
     @InjectRepository(Post) private postRepository: Repository<Post>,
     @Inject(TagsService) private tagService: TagsService,
   ) {}
+
+  async convertTags(tags: string[]): Promise<Tag[]> {
+    return await Promise.all(
+      tags.map(async (tag) => {
+        const aTag = await this.tagService.findOne(tag);
+        return aTag;
+      }),
+    );
+  }
+
   async create(createPostDto: CreatePostDto): Promise<Post> {
     const { title, body, tags } = createPostDto;
-    const convertedTags = tags
-      ? await Promise.all(
-          tags.map(async (tag) => {
-            const aTag = await this.tagService.findOne(tag);
-            return aTag;
-          }),
-        )
-      : undefined;
+    const convertedTags = await this.convertTags(tags);
 
     const post = this.postRepository.create({
       title,
@@ -60,7 +64,17 @@ export class PostsService {
   async update(id: number, updatePostDto: UpdatePostDto): Promise<Post> {
     try {
       const post = await this.findOne(id);
-      return this.postRepository.save(post);
+      const tags = updatePostDto.tags
+        ? await this.convertTags(updatePostDto.tags)
+        : undefined;
+      const { title, body } = updatePostDto;
+      const updatedPost = this.postRepository.create({
+        ...post,
+        title,
+        body,
+        tags,
+      });
+      return this.postRepository.save(updatedPost);
     } catch (error) {
       throw new BadRequestException();
     }

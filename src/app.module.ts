@@ -21,6 +21,7 @@ import { ConfigModule } from '@nestjs/config';
       database: process.env.BLOG_DB_NAME,
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
+      // logging: true,
     }),
     TagsModule,
     PagesModule,
