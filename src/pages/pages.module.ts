@@ -4,6 +4,6 @@ import { PagesController } from './pages.controller';
 
 @Module({
   controllers: [PagesController],
-  providers: [PagesService]
+  providers: [PagesService],
 })
 export class PagesModule {}
