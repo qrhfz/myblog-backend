@@ -39,7 +39,7 @@ export class PostsService {
 
   async findAll(): Promise<Post[]> {
     try {
-      return this.postRepository.find();
+      return this.postRepository.find({ relations: ['tags'] });
     } catch (error) {
       throw error;
     }
@@ -47,7 +47,9 @@ export class PostsService {
 
   async findOne(id: number): Promise<Post> {
     try {
-      const post = await this.postRepository.findOneOrFail(id);
+      const post = await this.postRepository.findOneOrFail(id, {
+        relations: ['tags'],
+      });
       console.log(post.tags);
       return post;
     } catch (_) {

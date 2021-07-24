@@ -9,6 +9,6 @@ export class Tag {
   @Column()
   name: string;
 
-  @ManyToMany(() => Post)
+  @ManyToMany(() => Post, (post) => post.tags)
   posts: Post[];
 }

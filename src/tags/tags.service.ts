@@ -26,7 +26,7 @@ export class TagsService {
 
   async findAll(): Promise<Tag[]> {
     try {
-      return this.tagRepository.find();
+      return this.tagRepository.find({ relations: ['posts'] });
     } catch (error) {
       throw error;
     }
@@ -34,7 +34,9 @@ export class TagsService {
 
   async findOne(slug: string): Promise<Tag> {
     try {
-      const tag = await this.tagRepository.findOneOrFail(slug);
+      const tag = await this.tagRepository.findOneOrFail(slug, {
+        relations: ['posts'],
+      });
       return tag;
     } catch (error) {
       throw new NotFoundException();
@@ -52,8 +54,8 @@ export class TagsService {
 
   async remove(slug: string) {
     try {
-      const post = await this.findOne(slug);
-      return await this.tagRepository.remove(post);
+      const tag = await this.findOne(slug);
+      return await this.tagRepository.remove(tag);
     } catch (error) {
       throw error;
     }
