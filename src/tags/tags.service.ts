@@ -43,6 +43,15 @@ export class TagsService {
     }
   }
 
+  async findOneWithoutPosts(slug: string): Promise<Tag> {
+    try {
+      const tag = await this.tagRepository.findOneOrFail(slug);
+      return tag;
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
   async update(slug: string, updateTagDto: UpdateTagDto) {
     try {
       const tag = await this.findOne(slug);

@@ -19,26 +19,23 @@ export class PostsService {
     @Inject(TagsService) private tagService: TagsService,
   ) {}
 
-  async convertTags(tags: string[]): Promise<Tag[]> {
+  async convertTags(strTags: string[]): Promise<Tag[]> {
     return await Promise.all(
-      tags.map(async (tag) => {
-        const aTag = await this.tagService.findOne(tag);
-        return aTag;
+      strTags.map(async (strTag) => {
+        return await this.tagService.findOneWithoutPosts(strTag);
       }),
     );
   }
 
-  async create(createPostDto: CreatePostDto): Promise<Post> {
+  async create(createPostDto: CreatePostDto): Promise<any> {
     const { title, body, tags } = createPostDto;
-    const convertedTags = await this.convertTags(tags);
-
+    const convertedTags = tags ? await this.convertTags(tags) : undefined;
     const post = this.postRepository.create({
       title,
       body,
     });
     post.tags = convertedTags;
-    console.log(post);
-    return this.postRepository.save(post);
+    return { id: (await this.postRepository.save(post)).id };
   }
 
   async findAll(): Promise<Post[]> {
@@ -61,20 +58,19 @@ export class PostsService {
     }
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto): Promise<Post> {
+  async update(id: number, updatePostDto: UpdatePostDto): Promise<any> {
     try {
       const post = await this.findOne(id);
-      const tags = updatePostDto.tags
+      const { tags, ...postContent } = updatePostDto;
+      const updatedTags = tags
         ? await this.convertTags(updatePostDto.tags)
         : undefined;
-      const { title, body } = updatePostDto;
       const updatedPost = this.postRepository.create({
         ...post,
-        title,
-        body,
-        tags,
+        ...postContent,
+        tags: updatedTags,
       });
-      return this.postRepository.save(updatedPost);
+      return { id: (await this.postRepository.save(updatedPost)).id };
     } catch (error) {
       throw new BadRequestException();
     }

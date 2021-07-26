@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { kebabCase } from 'src/utils';
+import { Repository } from 'typeorm';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { Page } from './entities/page.entity';
 
 @Injectable()
 export class PagesService {
-  create(createPageDto: CreatePageDto) {
-    return 'This action adds a new page';
+  constructor(
+    @InjectRepository(Page) private pageRepository: Repository<Page>,
+  ) {}
+
+  async create(createPageDto: CreatePageDto) {
+    try {
+      const slug = kebabCase(createPageDto.title);
+      const page = this.pageRepository.create({ ...createPageDto, slug });
+      return this.pageRepository.save(page);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException();
+    }
   }
 
-  findAll() {
-    return `This action returns all pages`;
+  async findAll() {
+    try {
+      return this.pageRepository.find();
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException();
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} page`;
+  async findOne(slug: string) {
+    try {
+      return this.pageRepository.findOneOrFail(slug);
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException();
+    }
   }
 
-  update(id: number, updatePageDto: UpdatePageDto) {
-    return `This action updates a #${id} page`;
+  async update(slug: string, updatePageDto: UpdatePageDto) {
+    try {
+      const page = await this.findOne(slug);
+      return this.pageRepository.save({ ...page, ...updatePageDto });
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} page`;
+  async remove(slug: string) {
+    try {
+      const page = await this.findOne(slug);
+      return await this.pageRepository.remove(page);
+    } catch (error) {
+      throw error;
+    }
   }
 }
