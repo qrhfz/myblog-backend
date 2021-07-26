@@ -51,7 +51,6 @@ export class PostsService {
       const post = await this.postRepository.findOneOrFail(id, {
         relations: ['tags'],
       });
-      console.log(post.tags);
       return post;
     } catch (_) {
       throw new NotFoundException();
