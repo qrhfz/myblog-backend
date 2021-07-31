@@ -5,4 +5,15 @@ const kebabCase = (string) =>
     .map((x) => x.toLowerCase())
     .join('-');
 
-export { kebabCase };
+const cookieExtractor = function (req) {
+  console.log('extract cookies');
+  let token = null;
+  if (req && req.cookies) {
+    console.log('there is cookies');
+    token = req.cookies['token'];
+    console.log(token);
+  }
+  return token;
+};
+
+export { kebabCase, cookieExtractor };
