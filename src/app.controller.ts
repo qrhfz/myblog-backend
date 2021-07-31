@@ -23,4 +23,10 @@ export class AppController {
     res.cookie('token', token, { httpOnly: true });
     return res.send({ token: token });
   }
+
+  @Post('auth/logout')
+  async logout(@Req() req: Request, @Res() res: Response) {
+    res.clearCookie('token');
+    return res.send({ message: 'logout success' });
+  }
 }
