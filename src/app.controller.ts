@@ -20,7 +20,7 @@ export class AppController {
   @Post('auth/login')
   async login(@Request() req, @Res() res: Response) {
     const token = await this.authService.login(req.user);
-    res.cookie('token', token);
+    res.cookie('token', token, { httpOnly: true });
     return res.send(token);
   }
 }
