@@ -40,7 +40,11 @@ export class PostsService {
 
   async findAll(): Promise<Post[]> {
     try {
-      return this.postRepository.find({ relations: ['tags'] });
+      return this.postRepository.find({
+        select: ['id', 'date', 'title'],
+        relations: ['tags'],
+        order: { date: 'DESC' },
+      });
     } catch (error) {
       throw error;
     }

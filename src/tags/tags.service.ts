@@ -26,7 +26,7 @@ export class TagsService {
 
   async findAll(): Promise<Tag[]> {
     try {
-      return this.tagRepository.find({ relations: ['posts'] });
+      return this.tagRepository.find();
     } catch (error) {
       throw error;
     }
@@ -34,9 +34,12 @@ export class TagsService {
 
   async findOne(slug: string): Promise<Tag> {
     try {
-      const tag = await this.tagRepository.findOneOrFail(slug, {
-        relations: ['posts'],
-      });
+      const tag = await this.tagRepository
+        .createQueryBuilder('tag')
+        .leftJoinAndSelect('tag.posts', 'post')
+        .select(['tag.name', 'post.id', 'post.title', 'post.date'])
+        .where('tag.slug = :slug', { slug: slug })
+        .getOneOrFail();
       return tag;
     } catch (error) {
       throw new NotFoundException();
